@@ -3,11 +3,13 @@ import { useState } from "react";
 import api from "@/app/api";
 import { useAdminAuthStore } from "../store/useAdminAuthStore";
 import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const verifyAdmin = useAdminAuthStore((state) => state.verifyAdmin);
+  const router = useRouter();
 
   const handleAdminLogin = async (e) => {
     e.preventDefault();
@@ -16,6 +18,7 @@ export default function AdminLogin() {
       await api.post("/auth/loginadmin", { email, password, client: "web" });
       await verifyAdmin(); // سيقوم بتغيير حالة admin في الـ Store وبالتالي يفتح الـ Layout
       toast.success("مرحباً بك في لوحة التحكم");
+      router.push('/admin');
 
     } catch (error) {
       toast.error("صلاحيات غير كافية أو بيانات خاطئة");
