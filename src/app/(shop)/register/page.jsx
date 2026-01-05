@@ -1,21 +1,28 @@
 "use client";
 import { useState } from "react";
-import { useRegister } from "@/app/(shop)/store/useAuth";
+import api from "@/app/api";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "react-toastify";
 
 export default function RegisterPage() {
   const [form, setForm] = useState({ username: "", email: "", password: "" });
-  const { mutate, isPending, error } = useRegister();
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    mutate(form, {
-      onSuccess: () => {
-        router.push("/login");
-      }
-    });
+    setLoading(true);
+    try {
+      await api.post("/auth/register", form);
+      toast.success("تم إنشاء الحساب بنجاح! يمكنك الدخول الآن");
+      router.push("/login");
+    } catch (error) {
+      const msg = error.response?.data?.message || "حدث خطأ أثناء إنشاء الحساب";
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -23,31 +30,32 @@ export default function RegisterPage() {
       <div className="bg-white w-full max-w-lg p-10 rounded-3xl shadow-2xl">
         <h1 className="text-3xl font-bold mb-8 text-center text-gray-800">إنشاء حساب</h1>
 
-        {error && (
-          <p className="text-red-600 text-sm mb-6 text-center">
-            {error.message || "حدث خطأ أثناء إنشاء الحساب"}
-          </p>
-        )}
-
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <input
             placeholder="اسم المستخدم"
-            className="w-full rounded-2xl px-5 py-4 text-gray-700 bg-gray-100 placeholder-gray-400 shadow-inner"
+            className="w-full rounded-2xl px-5 py-4 text-gray-700 bg-gray-100 placeholder-gray-400 shadow-inner outline-none focus:ring-2 focus:ring-red-500"
             onChange={(e) => setForm({ ...form, username: e.target.value })}
+            required
           />
           <input
+            type="email"
             placeholder="البريد الإلكتروني"
-            className="w-full rounded-2xl px-5 py-4 text-gray-700 bg-gray-100 placeholder-gray-400 shadow-inner"
+            className="w-full rounded-2xl px-5 py-4 text-gray-700 bg-gray-100 placeholder-gray-400 shadow-inner outline-none focus:ring-2 focus:ring-red-500"
             onChange={(e) => setForm({ ...form, email: e.target.value })}
+            required
           />
           <input
             type="password"
             placeholder="كلمة المرور"
-            className="w-full rounded-2xl px-5 py-4 text-gray-700 bg-gray-100 placeholder-gray-400 shadow-inner"
+            className="w-full rounded-2xl px-5 py-4 text-gray-700 bg-gray-100 placeholder-gray-400 shadow-inner outline-none focus:ring-2 focus:ring-red-500"
             onChange={(e) => setForm({ ...form, password: e.target.value })}
+            required
           />
-          <button className="w-full mt-6 bg-red-600 hover:bg-red-700 text-white font-bold py-4 rounded-2xl shadow-lg">
-            {isPending ? "جاري الإنشاء..." : "إنشاء حساب"}
+          <button 
+            disabled={loading}
+            className={`w-full mt-6 text-white font-bold py-4 rounded-2xl shadow-lg transition-all ${loading ? 'bg-gray-400' : 'bg-red-600 hover:bg-red-700 active:scale-95'}`}
+          >
+            {loading ? "جاري الإنشاء..." : "إنشاء حساب"}
           </button>
         </form>
 

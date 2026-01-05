@@ -1,22 +1,35 @@
 "use client";
 import { useState } from "react";
-import { useLogin } from "@/app/(shop)/store/useAuth";
+import api from "@/app/api"; // نستخدم الـ api بتاعنا اللي فيه الانترسيبتور
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/app/(shop)/store/useAuthStore"; // الستور اللي عملناه عشان نحفظ اليوزر
 import Link from "next/link";
+import { toast } from "react-toastify";
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
-  const { mutate, isPending, error } = useLogin();
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const checkAuth = useAuthStore((state) => state.checkAuth);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    mutate(form, {
-      onSuccess: () => {
-        // بعد تسجيل الدخول، نوديه للرئيسية
-        router.push("/");
-      }
-    });
+    setLoading(true);
+    try {
+      // إرسال طلب تسجيل الدخول
+      await api.post("/auth/login", { ...form, client: "web" });
+      
+      // تحديث بيانات المستخدم في الستور العالمي (Zustand)
+      await checkAuth();
+      
+      toast.success("تم تسجيل الدخول بنجاح");
+      router.push("/"); // التوجه للرئيسية
+    } catch (error) {
+      const msg = error.response?.data?.message || "البريد أو كلمة المرور غير صحيحة";
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -24,26 +37,26 @@ export default function LoginPage() {
       <div className="bg-white w-full max-w-lg p-10 rounded-3xl shadow-2xl">
         <h1 className="text-3xl font-bold mb-8 text-center text-gray-800">تسجيل الدخول</h1>
 
-        {error && (
-          <p className="text-red-600 text-sm mb-6 text-center">
-            {error.message || "البريد أو كلمة المرور غير صحيحة"}
-          </p>
-        )}
-
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <input
+            type="email"
             placeholder="البريد الإلكتروني"
-            className="w-full rounded-2xl px-5 py-4 text-gray-700 bg-gray-100 placeholder-gray-400 shadow-inner"
+            className="w-full rounded-2xl px-5 py-4 text-gray-700 bg-gray-100 placeholder-gray-400 shadow-inner outline-none focus:ring-2 focus:ring-green-500"
             onChange={(e) => setForm({ ...form, email: e.target.value })}
+            required
           />
           <input
             type="password"
             placeholder="كلمة المرور"
-            className="w-full rounded-2xl px-5 py-4 text-gray-700 bg-gray-100 placeholder-gray-400 shadow-inner"
+            className="w-full rounded-2xl px-5 py-4 text-gray-700 bg-gray-100 placeholder-gray-400 shadow-inner outline-none focus:ring-2 focus:ring-green-500"
             onChange={(e) => setForm({ ...form, password: e.target.value })}
+            required
           />
-          <button className="w-full mt-6 bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-2xl shadow-lg">
-            {isPending ? "جاري الدخول..." : "دخول"}
+          <button 
+            disabled={loading}
+            className={`w-full mt-6 text-white font-bold py-4 rounded-2xl shadow-lg transition-all ${loading ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700 active:scale-95'}`}
+          >
+            {loading ? "جاري الدخول..." : "دخول"}
           </button>
         </form>
 

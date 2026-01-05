@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import api from "@/app/(shop)/axios";
+import api from "@/app/api";
 import { toast } from "react-toastify";
 
 export const useCartStore = create((set) => ({
@@ -10,7 +10,7 @@ export const useCartStore = create((set) => ({
     if (!userId) return;
     try {
       set({ loading: true });
-      const res = await api.get(`/api/cart/${userId}`);
+      const res = await api.get(`/cart/${userId}`);
       set({ cart: res.data, loading: false });
     } catch (err) {
       set({ loading: false });
@@ -21,7 +21,7 @@ export const useCartStore = create((set) => ({
   addToCart: async (userId, productId, qty) => {
     console.log("البيانات المرسلة للباك إند:", { userId, productId, qty });
     try {
-      const res = await api.post("/api/cart", { userId, productId, qty });
+      const res = await api.post("/cart", { userId, productId, qty });
       set({ cart: res.data });
       toast.success("تمت الإضافة للسلة!");
     } catch (err) {
@@ -31,7 +31,7 @@ export const useCartStore = create((set) => ({
 
   updateQty: async (userId, productId, qty) => {
     try {
-      const res = await api.put("/api/cart/item", { userId, productId, qty });
+      const res = await api.put("/cart/item", { userId, productId, qty });
       set({ cart: res.data });
     } catch (err) {
       toast.error("فشل تحديث الكمية");
@@ -40,7 +40,7 @@ export const useCartStore = create((set) => ({
 
   removeItem: async (userId, productId) => {
     try {
-      const res = await api.delete("/api/cart/item", { data: { userId, productId } });
+      const res = await api.delete("/cart/item", { data: { userId, productId } });
       set({ cart: res.data });
       toast.success("تم الحذف");
     } catch (err) {

@@ -1,210 +1,192 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { useEffect, useState } from "react";
+import api from "@/app/api";
 
-export default function ProductsPage() {
+export default function AdminProductsPage() {
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
 
-  // Form state
-  const [productId, setProductId] = useState(null); // null = إضافة جديد
-  const [name, setName] = useState("");
-  const [weight, setWeight] = useState("");
-  const [price, setPrice] = useState("");
-  const [discountedPrice, setDiscountedPrice] = useState("");
+  const [form, setForm] = useState({
+    name: "",
+    price: "",
+    category: "",
+    weights: "",
+  });
   const [imageFile, setImageFile] = useState(null);
+  const [editProductId, setEditProductId] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  const API_BASE = "https://iraqi-e-store-api.vercel.app/api";
-
-  // جلب المنتجات
-  const fetchProducts = async () => {
+  // --- Fetch Categories ---
+  const fetchCategories = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/products`, { withCredentials: true });
-         console.log("Raw response from API:", res); // هنا نشوف كل حاجة
-    console.log("Data array:", res.data.data);
-      setProducts(res.data.data || []);
+      const res = await api.get("/api/categories");
+      setCategories(res.data);
     } catch (err) {
-      console.error("Error fetching products:", err);
+      console.error("Error fetching categories:", err);
     }
   };
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  // Reset form
-  const resetForm = () => {
-    setProductId(null);
-    setName("");
-    setWeight("");
-    setPrice("");
-    setDiscountedPrice("");
-    setImageFile(null);
-  };
-
-  // إضافة / تعديل المنتج
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // --- Fetch Products ---
+  const fetchProducts = async () => {
     setLoading(true);
-    setMessage("");
-
     try {
-      const formData = new FormData();
-      formData.append("name", name);
-      formData.append("weight", weight);
-      formData.append("price", price);
-      formData.append("discountedPrice", discountedPrice || price);
-      if (imageFile) formData.append("image", imageFile);
-
-      // ✅ هنا نضيف الكونسول قبل الإرسال
-      console.log("Data being sent to backend:");
-      for (let pair of formData.entries()) {
-        console.log(pair[0]+ ": " + pair[1]);
-      }
-
-      if (productId) {
-        await axios.put(`${API_BASE}/products/${productId}`, formData, { withCredentials: true });
-        setMessage("تم تعديل المنتج بنجاح!");
-      } else {
-        await axios.post(`${API_BASE}/products`, formData, { withCredentials: true });
-        setMessage("تم إضافة المنتج بنجاح!");
-      }
-
-      resetForm();
-      fetchProducts();
+      const res = await api.get("/api/products");
+    setProducts(res.data.products || res.data);
     } catch (err) {
-      console.error(err);
-      setMessage("حدث خطأ، حاول مرة أخرى");
+      console.error("Error fetching products:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  // حذف المنتج
-  const handleDelete = async (id) => {
-    if (!confirm("هل أنت متأكد من حذف هذا المنتج؟")) return;
+  useEffect(() => {
+    fetchCategories();
+    fetchProducts();
+  }, []);
+
+  // --- Add / Update Product ---
+  const submitProduct = async (e) => {
+    e.preventDefault();
+    if (!form.name || !form.price || !form.category) {
+      alert("الاسم، السعر، والفئة مطلوبة");
+      return;
+    }
+
+    setSubmitting(true);
+    const formData = new FormData();
+    for (const key in form) formData.append(key, form[key]);
+    if (imageFile) formData.append("image", imageFile);
+
     try {
-      await axios.delete(`${API_BASE}/products/${id}`, { withCredentials: true });
+      if (editProductId) {
+        await api.put(`/api/products/${editProductId}`, formData, { withCredentials: true });
+      } else {
+        await api.post("/api/products", formData, { withCredentials: true });
+      }
+      setForm({ name: "", price: "", category: "", weights: "" });
+      setImageFile(null);
+      setEditProductId(null);
       fetchProducts();
     } catch (err) {
-      console.error("Error deleting product:", err);
-      alert("حدث خطأ أثناء الحذف");
+      console.error("Submit product error", err.response?.data || err.message);
+      alert(err.response?.data?.message || "حدث خطأ");
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  // ملء الفورم للتعديل
-  const handleEdit = (product) => {
-    setProductId(product._id);
-    setName(product.name);
-    setWeight(product.weight || "");
-    setPrice(product.price);
-    setDiscountedPrice(product.discountedPrice || product.price);
+  // --- Delete Product ---
+  const deleteProduct = async (id) => {
+    if (!confirm("هل أنت متأكد من حذف المنتج؟")) return;
+    try {
+      await api.delete(`/api/products/${id}`, { withCredentials: true });
+      setProducts(products.filter((p) => p._id !== id));
+    } catch (err) {
+      console.error("Delete product error", err.response?.data || err.message);
+    }
+  };
+
+  // --- Edit Product ---
+  const editProduct = (product) => {
+    setEditProductId(product._id);
+    setForm({
+      name: product.name,
+      price: product.price,
+      category: product.category?._id || "",
+      weights: product.weights || "",
+    });
     setImageFile(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-4">{productId ? "تعديل المنتج" : "إضافة منتج جديد"}</h2>
+    <div className="p-6">
+      <h2 className="text-2xl font-bold mb-4">{editProductId ? "تعديل المنتج" : "إضافة منتج جديد"}</h2>
 
-      {message && <p className="mb-4 text-green-600 font-medium">{message}</p>}
-
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 bg-white p-6 rounded shadow">
+      {/* --- Form --- */}
+      <form onSubmit={submitProduct} className="flex flex-col gap-3 bg-white p-4 rounded shadow-md mb-6">
         <input
-          type="text"
           placeholder="اسم المنتج"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={form.name}
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
           required
-          className="p-2 border rounded"
-        />
-        <input
-          type="text"
-          placeholder="الوزن"
-          value={weight}
-          onChange={(e) => setWeight(e.target.value)}
-          required
-          className="p-2 border rounded"
         />
         <input
           type="number"
           placeholder="السعر"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
+          value={form.price}
+          onChange={(e) => setForm({ ...form, price: e.target.value })}
           required
-          min="0"
-          className="p-2 border rounded"
         />
+        <select
+          value={form.category}
+          onChange={(e) => setForm({ ...form, category: e.target.value })}
+          required
+        >
+          <option value="">اختر الفئة</option>
+          {categories.map((cat) => (
+            <option key={cat._id} value={cat._id}>{cat.name}</option>
+          ))}
+        </select>
         <input
-          type="number"
-          placeholder="الخصم"
-          value={discountedPrice}
-          onChange={(e) => setDiscountedPrice(e.target.value)}
-          min="0"
-          className="p-2 border rounded"
+          placeholder="الأوزان (مثال: 100g,200g)"
+          value={form.weights}
+          onChange={(e) => setForm({ ...form, weights: e.target.value })}
         />
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setImageFile(e.target.files[0])}
-          className="p-2 border rounded col-span-1 md:col-span-2"
-        />
+        <input type="file" onChange={(e) => setImageFile(e.target.files[0])} />
         <button
           type="submit"
-          disabled={loading}
-          className="bg-cyan-600 text-white p-2 rounded col-span-1 md:col-span-2"
+          disabled={submitting}
+          className="bg-blue-500 text-white p-2 rounded"
         >
-          {loading ? "جارٍ الحفظ..." : productId ? "تعديل المنتج" : "إضافة المنتج"}
+          {editProductId ? "تعديل المنتج" : "إضافة المنتج"}
         </button>
       </form>
 
-      <h2 className="text-xl font-bold mb-2">قائمة المنتجات</h2>
-      <table className="w-full border-collapse bg-white shadow rounded">
-        <thead>
-          <tr className="bg-gray-100 text-gray-700">
-            <th className="border p-2">الصورة</th>
-            <th className="border p-2">الاسم</th>
-            <th className="border p-2">الوزن</th>
-            <th className="border p-2">السعر</th>
-            <th className="border p-2">الخصم</th>
-            <th className="border p-2">خيارات</th>
-          </tr>
-        </thead>
-        <tbody>
-          {products?.map((prod) => (
-            <tr key={prod._id} className="text-center border-b">
-              <td className="p-2">
-                {prod.image ? <img src={prod.image} alt={prod.name} className="w-16 h-16 object-cover mx-auto" /> : "-"}
-              </td>
-              <td className="p-2">{prod.name}</td>
-              <td className="p-2">{prod.weight || "-"}</td>
-              <td className="p-2">{prod.price}</td>
-              <td className="p-2">{prod.discountedPrice || "-"}</td>
-              <td className="p-2 flex justify-center gap-2">
-                <button
-                  className="bg-yellow-400 text-white px-2 py-1 rounded"
-                  onClick={() => handleEdit(prod)}
-                >
-                  تعديل
-                </button>
-                <button
-                  className="bg-red-600 text-white px-2 py-1 rounded"
-                  onClick={() => handleDelete(prod._id)}
-                >
-                  حذف
-                </button>
-              </td>
-            </tr>
-          ))}
-          {products.length === 0 && (
+      {/* --- Products Table --- */}
+      {loading ? (
+        <p>جاري التحميل...</p>
+      ) : (
+        <table className="w-full text-right border-collapse border border-gray-300">
+          <thead className="bg-gray-100">
             <tr>
-              <td colSpan="6" className="p-4 text-center">لا يوجد منتجات</td>
+              <th className="border p-2">الصورة</th>
+              <th className="border p-2">الاسم</th>
+              <th className="border p-2">السعر</th>
+              <th className="border p-2">الوزن</th>
+              <th className="border p-2">إجراءات</th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {products.map((p) => (
+              <tr key={p._id} className="hover:bg-gray-50">
+                <td className="border p-2">
+                  {p.image && <img src={p.image} className="w-16 h-16 object-cover rounded" />}
+                </td>
+                <td className="border p-2">{p.name}</td>
+                <td className="border p-2">{p.price}</td>
+                <td className="border p-2">{p.weights || "-"}</td>
+                <td className="border p-2 flex gap-2">
+                  <button
+                    className="bg-yellow-400 text-white px-2 py-1 rounded"
+                    onClick={() => editProduct(p)}
+                  >
+                    تعديل
+                  </button>
+                  <button
+                    className="bg-red-500 text-white px-2 py-1 rounded"
+                    onClick={() => deleteProduct(p._id)}
+                  >
+                    حذف
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

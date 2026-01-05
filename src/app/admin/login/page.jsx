@@ -1,77 +1,47 @@
 "use client";
-
 import { useState } from "react";
-import axios from "axios";
-import { useRouter } from "next/navigation";
+import api from "@/app/api";
+import { useAdminAuthStore } from "../store/useAdminAuthStore";
+import { toast } from "react-toastify";
 
-export default function AdminLoginPage() {
-  const router = useRouter();
+export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const verifyAdmin = useAdminAuthStore((state) => state.verifyAdmin);
 
-  const handleLogin = async (e) => {
+  const handleAdminLogin = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError("");
-
     try {
-      const response = await axios.post(
-        "https://iraqi-e-store-api.vercel.app/api/auth/loginadmin",
-        { email, password,
-            web:"client"
-         },
-        { withCredentials: true, headers: { "Content-Type": "application/json" } }
-      );
+      // استخدام مسار loginadmin الخاص بالخلفية
+      await api.post("/auth/loginadmin", { email, password, client: "web" });
+      await verifyAdmin(); // سيقوم بتغيير حالة admin في الـ Store وبالتالي يفتح الـ Layout
+      toast.success("مرحباً بك في لوحة التحكم");
 
-      console.log("تم تسجيل الدخول:", response.data);
-      router.push("/admin");
-    } catch (err) {
-      console.error("خطأ في تسجيل الدخول:", err.response?.data || err.message);
-      setError(err.response?.data?.message || "فشل تسجيل الدخول");
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      toast.error("صلاحيات غير كافية أو بيانات خاطئة");
     }
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="bg-white p-10 rounded-2xl shadow-xl w-80">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-          تسجيل دخول الإدارة
-        </h1>
-
-        <form onSubmit={handleLogin} className="flex flex-col gap-5">
-          {/* Input مودرن */}
-          <input
-            type="text"
-            placeholder="اسم المستخدم"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="p-3 border-b-2 border-l-2 border-r-2 border-gray-300 rounded-tl-md rounded-tr-md focus:border-blue-500 focus:ring-1 focus:ring-blue-200 transition-transform duration-200 hover:scale-105"
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 w-full">
+      <form onSubmit={handleAdminLogin} className="bg-white p-8 rounded shadow-lg w-96">
+        <h1 className="text-xl font-bold mb-4 text-center text-red-600">لوحة تحكم المدير</h1>
+        <div className="space-y-4">
+          <input 
+            type="email" placeholder="بريد المسؤول" 
+            className="w-full p-3 border rounded focus:ring-2 focus:ring-red-500"
+            onChange={(e) => setEmail(e.target.value)} 
           />
-          <input
-            type="password"
-            placeholder="كلمة المرور"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="p-3 border-b-2 border-l-2 border-r-2 border-gray-300 rounded-tl-md rounded-tr-md focus:border-blue-500 focus:ring-1 focus:ring-blue-200 transition-transform duration-200 hover:scale-105"
+          <input 
+            type="password" placeholder="كلمة السر" 
+            className="w-full p-3 border rounded focus:ring-2 focus:ring-red-500"
+            onChange={(e) => setPassword(e.target.value)} 
           />
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-red-500 text-white p-3 rounded-md font-semibold hover:bg-red-600 disabled:opacity-70 disabled:cursor-not-allowed transition transform hover:scale-105"
-          >
-            {loading ? "جاري الدخول..." : "دخول"}
+          <button className="w-full bg-gray-800 text-white p-3 rounded font-bold transition-colors hover:bg-black">
+            تسجيل دخول الإدارة
           </button>
-
-          {error && <p className="text-red-600 text-sm mt-1 text-center">{error}</p>}
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   );
 }

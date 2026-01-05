@@ -44,13 +44,6 @@ export const useRegister = () => {
 
       console.log("Register Response:", res.data);
 
-      if (res.data.tokens) {
-        localStorage.setItem("accessToken", res.data.tokens.accessToken);
-        localStorage.setItem("refreshToken", res.data.tokens.refreshToken);
-      } else {
-        console.warn("لا يوجد توكنز في الاستجابة!");
-      }
-
       return res.data;
     },
 

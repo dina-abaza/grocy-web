@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import api from "@/app/(shop)/axios";
+import api from "@/app/api";
 import { ShoppingCart, Tag, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/app/(shop)/store/useCartStore";
