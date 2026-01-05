@@ -5,19 +5,31 @@ export const useAdminAuthStore = create((set) => ({
   admin: null,
   loading: true,
 
-  // دالة التأكد من صلاحية الأدمن (تستخدم في AdminLayout)
+  // تحقق من صلاحية الأدمن
   verifyAdmin: async () => {
+    set({ loading: true });
     try {
-      const res = await api.post('/auth/verifyadmin');
-      set({ admin: res.data.admin, loading: false });
+      // نتحقق من صلاحية الأدمن فقط
+      const res = await api.post('/auth/verifyadmin', null, { withCredentials: true });
+
+      // إذا نجحت العملية، نعتبر المستخدم أدمن
+      set({
+        admin: { role: 'admin' }, // ممكن تضيفي اسم أو أي بيانات متاحة من الـ res
+        loading: false,
+      });
     } catch (error) {
+      console.error("verifyAdmin error:", error.response?.data || error.message);
       set({ admin: null, loading: false });
     }
   },
 
+  // تسجيل خروج الأدمن
   adminLogout: async () => {
-    await api.post('/auth/logout', { client: 'web' });
-    set({ admin: null });
-    window.location.href = '/admin/login';
-  }
+    try {
+      await api.post('/auth/logout', { client: 'web' }, { withCredentials: true });
+    } finally {
+      set({ admin: null });
+      window.location.href = '/admin/login';
+    }
+  },
 }));

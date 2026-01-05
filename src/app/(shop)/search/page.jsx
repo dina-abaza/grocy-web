@@ -16,7 +16,7 @@ export default function SearchPage() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const res = await api.get("/api/products/search", {
+        const res = await api.get("/products/search", {
           params: { keyword, page: 1, limit: 10 },
         });
         console.log("SEARCH RESPONSE:", res.data);

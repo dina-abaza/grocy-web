@@ -13,7 +13,7 @@ import { useAdminAuthStore } from "../store/useAdminAuthStore";
 
 export default function AdminSidebar({ disabled }) {
   const pathname = usePathname();
-  const { logoutAdmin } = useAdminAuthStore();
+  const { adminLogout} = useAdminAuthStore();
 
   const navLinks = [
     { name: "الرئيسية", href: "/admin", icon: LayoutDashboard, color: "#ef4444" },
@@ -57,7 +57,7 @@ export default function AdminSidebar({ disabled }) {
       </nav>
 
       {!disabled && (
-        <button className="logout" onClick={logoutAdmin}>
+        <button className="logout" onClick={adminLogout}>
           <LogOut size={18} />
           تسجيل خروج
         </button>

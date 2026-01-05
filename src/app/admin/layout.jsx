@@ -15,9 +15,9 @@ export default function AdminLayout({ children }) {
     verifyAdmin();
   }, [verifyAdmin]);
 
-  if (loading) return null;
+  if (loading) return null; // أو ممكن تحطي Loading Spinner
 
-  // إذا كنا في صفحة اللوجن، نعرض محتواها فقط بدون الهيكل الإداري
+  // لو الصفحة الحالية هي صفحة اللوجن، نعرضها بدون Layout
   if (pathname === "/admin/login") {
     return <Providers>{children}</Providers>;
   }

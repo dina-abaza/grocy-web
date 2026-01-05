@@ -14,7 +14,8 @@ export default function RegisterPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.post("/auth/register", form);
+    const res=  await api.post("/auth/register", form);
+      console.log("Registration successful",);
       toast.success("تم إنشاء الحساب بنجاح! يمكنك الدخول الآن");
       router.push("/login");
     } catch (error) {

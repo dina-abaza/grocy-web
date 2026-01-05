@@ -3,11 +3,14 @@ import React from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Home, MessageCircle, ShoppingCart, User, Percent } from "lucide-react";
 import { useAuthStore } from "@/app/(shop)/store/useAuthStore";
+import { useCartStore } from "@/app/(shop)/store/useCartStore";
 
 const NavBottom = () => {
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated, logout } = useAuthStore(); // استدعاء حالة الدخول ودالة الخروج
+const { cart } = useCartStore();
+const cartItemsCount = cart?.items?.reduce((acc, item) => acc + (item.qty || 0), 0) || 0;
 
   const openWhatsApp = () => {
     const phoneNumber = "964XXXXXXXXX"; // رقم صاحب المحل
@@ -36,17 +39,27 @@ const NavBottom = () => {
       </div>
 
       {/* زر السلة */}
-      <div 
-        onClick={() => router.push('/cart')}
-        className="relative -mt-10 flex flex-col items-center cursor-pointer"
-      >
-        <div className="bg-white p-2 rounded-full shadow-lg border border-gray-50">
-          <div className={`p-3 rounded-full ${pathname === '/cart' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-400'}`}>
-            <ShoppingCart size={28} />
-          </div>
-        </div>
-        <span className={`text-[10px] mt-1 ${pathname === '/cart' ? 'text-red-600 font-bold' : 'text-gray-400'}`}>السلة</span>
-      </div>
+   <div 
+  onClick={() => router.push('/cart')}
+  className="relative -mt-10 flex flex-col items-center cursor-pointer"
+>
+  <div className="bg-white p-2 rounded-full shadow-lg border border-gray-50">
+    <div className={`p-3 rounded-full ${pathname === '/cart' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-400'}`}>
+      <ShoppingCart size={28} />
+    </div>
+
+    {/* عداد المنتجات */}
+    {cartItemsCount > 0 && (
+      <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center">
+        {cartItemsCount}
+      </span>
+    )}
+  </div>
+
+  <span className={`text-[10px] mt-1 ${pathname === '/cart' ? 'text-red-600 font-bold' : 'text-gray-400'}`}>
+    السلة
+  </span>
+</div>
 
       {/* العروض */}
       <div 
@@ -61,7 +74,7 @@ const NavBottom = () => {
       {isAuthenticated ? (
         <div 
           onClick={logout}
-          className="flex flex-col items-center cursor-pointer text-red-600"
+          className="flex flex-col items-center cursor-pointer text-gray-400 hover:text-red-600"
         >
           <User size={24} />
           <span className="text-[10px] mt-1 font-bold">تسجيل خروج</span>

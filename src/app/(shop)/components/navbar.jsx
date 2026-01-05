@@ -26,17 +26,17 @@ const Navbar = () => {
 
     const timer = setTimeout(async () => {
       try {
-        const res = await api.get("/api/products/autocomplete", {
+        const res = await api.get("/products/autocomplete", {
           params: { keyword, limit: 5 },
         });
         console.log("AUTO RESPONSE:", res.data);
 
-      setSuggestions(res.data.suggestions || []);
+      setSuggestions(res.data || []);
 
       } catch (e) {
         console.error(e);
       }
-    }, 400);
+    }, 300);
 
     return () => clearTimeout(timer);
   }, [keyword]);

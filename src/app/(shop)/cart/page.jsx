@@ -6,13 +6,13 @@ import { Trash2, Plus, Minus, ShoppingBasket, ArrowRight, Truck, X, MapPin, Phon
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "react-toastify";
+import api from "@/app/api";
 
 const CartPage = () => {
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
   const { cart, loading, fetchCart, updateQty, removeItem } = useCartStore();
   
-  // حالة فتح الـ Pop-up
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [shippingData, setShippingData] = useState({
     name: user?.username || "",
@@ -25,19 +25,48 @@ const CartPage = () => {
     if (userId) fetchCart(userId);
   }, [user, fetchCart]);
 
-  const totalPrice = cart?.items?.reduce((acc, item) => acc + item.product.price * item.qty, 0);
+  // حساب المجموع الكلي
+  const totalPrice = cart?.items?.reduce(
+    (acc, item) => acc + ((item.priceAtAdd || item.productId?.price || 0) * (item.qty || 1)),
+    0
+  );
 
-  // دالة إرسال الطلب النهائي
-  const handleConfirmOrder = async (e) => {
-    e.preventDefault();
-    if (!shippingData.phone || !shippingData.address) {
-      return toast.error("يرجى ملء جميع البيانات");
-    }
-    // هنا مستقبلاً هننادي على دالة API لإرسال الطلب
-    console.log("طلب جديد:", { items: cart.items, shipping: shippingData, total: totalPrice });
-    toast.success("تم استلام طلبك بنجاح! سنتصل بك قريباً.");
+const handleConfirmOrder = async (e) => {
+  e.preventDefault();
+
+  if (!shippingData.phone || !shippingData.address) {
+    return toast.error("يرجى ملء جميع البيانات");
+  }
+
+  if (!cart?.items || cart.items.length === 0) {
+    return toast.error("سلتك فارغة ولا يمكن إنشاء طلب");
+  }
+
+  try {
+    const orderData = {
+      userId: user?.id || user?._id,
+      address: shippingData.address,
+      phone: shippingData.phone
+    };
+
+    const response = await api.post(
+      '/orders',
+      orderData,
+      { withCredentials: true } // مهم لإرسال الكوكيز
+    );
+
+    toast.success("تم إنشاء الطلب بنجاح!");
+    console.log("طلب جديد:", response.data);
+   fetchCart(user?._id || user?.id);
+
     setIsModalOpen(false);
-  };
+    // إفراغ السلة لو حابة
+    // fetchCart(user?.id || user?._id);
+  } catch (error) {
+    console.error("خطأ في إنشاء الطلب:", error.response?.data || error.message);
+    toast.error("فشل إنشاء الطلب. حاول لاحقاً");
+  }
+};
 
   if (!isAuthenticated) return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] p-6 text-center">
@@ -66,21 +95,21 @@ const CartPage = () => {
           </div>
         ) : (
           <div className="flex flex-col gap-4">
-            {cart.items.map((item) => (
-              <div key={item.product._id} className="bg-white rounded-3xl p-4 shadow-sm border border-gray-100 flex items-center gap-4">
+            {cart.items.map((item, idx) => (
+              <div key={item._id || idx} className="bg-white rounded-3xl p-4 shadow-sm border border-gray-100 flex items-center gap-4">
                 <div className="w-20 h-20 bg-gray-50 rounded-2xl p-2 flex items-center justify-center">
-                  <img src={item.product.image} className="max-h-full object-contain" />
+                  <img src={item.productId?.image || "/placeholder.png"} className="max-h-full object-contain" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-bold text-gray-800 text-sm">{item.product.name}</h3>
-                  <p className="text-red-600 font-black text-sm">{item.product.price?.toLocaleString()} د.ع</p>
+                  <h3 className="font-bold text-gray-800 text-sm">{item.productId?.name || "اسم غير متوفر"}</h3>
+                  <p className="text-red-600 font-black text-sm">{(item.priceAtAdd || item.productId?.price)?.toLocaleString() || 0} د.ع</p>
                   <div className="flex items-center justify-between mt-2">
                     <div className="flex items-center gap-4 bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
-                      <button onClick={() => updateQty(user.id || user._id, item.product._id, item.qty + 1)} className="text-red-600"><Plus size={18} /></button>
-                      <span className="font-bold text-gray-700">{item.qty}</span>
-                      <button onClick={() => updateQty(user.id || user._id, item.product._id, Math.max(1, item.qty - 1))} className="text-gray-400" disabled={item.qty <= 1}><Minus size={18} /></button>
+                      <button onClick={() => updateQty(user?.id || user?._id, item.productId._id, (item.qty || 1) + 1)} className="text-green-700"><Plus size={18} /></button>
+                      <span className="font-bold text-gray-700">{item.qty || 1}</span>
+                      <button onClick={() => updateQty(user?.id || user?._id, item.productId._id, Math.max(1, (item.qty || 1) - 1))} className="text-red-600" disabled={(item.qty || 1) <= 1}><Minus size={18} /></button>
                     </div>
-                    <button onClick={() => removeItem(user.id || user._id, item.product._id)} className="text-gray-300 hover:text-red-600"><Trash2 size={20} /></button>
+                    <button onClick={() => removeItem(user?.id || user?._id, item.productId._id)} className="text-gray-300 hover:text-red-600"><Trash2 size={20} /></button>
                   </div>
                 </div>
               </div>
@@ -102,7 +131,7 @@ const CartPage = () => {
         )}
       </div>
 
-      {/* Pop-up (Modal) */}
+      {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white w-full max-w-md rounded-t-[40px] md:rounded-[40px] p-6 shadow-2xl relative animate-in slide-in-from-bottom duration-300">
