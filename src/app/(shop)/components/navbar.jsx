@@ -66,25 +66,33 @@ const Navbar = () => {
           )}
 
           {!isAuthenticated && (
-            <div className="hidden md:flex gap-3">
-              <Link href="/login">تسجيل دخول</Link>
-              <Link href="/register" className="bg-red-600 text-white px-6 py-2 rounded-xl">
+            <div className="hidden md:flex items-center gap-3">
+              <Link 
+                href="/login" 
+                className="px-6 py-2 rounded-xl text-gray-700 font-bold hover:bg-gray-200 transition-all duration-300"
+              >
+                تسجيل دخول
+              </Link>
+              <Link 
+                href="/register" 
+                className="bg-red-600 text-white px-6 py-2 rounded-xl font-bold shadow-md hover:bg-red-700 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
+              >
                 إنشاء حساب
               </Link>
             </div>
           )}
 
           <div className="hidden md:flex gap-4 border-r pr-4">
-            <Link href="/offers" className="flex flex-col items-center">
-              <Percent size={22} />
-              <span className="text-xs font-bold">العروض</span>
+            <Link href="/offers" className="flex flex-col items-center group hover:scale-105 transition-all duration-300">
+              <Percent size={22} className="group-hover:text-red-600 transition-colors" />
+              <span className="text-xs font-bold group-hover:text-red-600 transition-colors">العروض</span>
             </Link>
 
-            <Link href="/cart" className="relative flex flex-col items-center">
-              <ShoppingCart size={22} />
-              <span className="text-xs font-bold">السلة</span>
+            <Link href="/cart" className="relative flex flex-col items-center group hover:scale-105 transition-all duration-300">
+              <ShoppingCart size={22} className="group-hover:text-red-600 transition-colors" />
+              <span className="text-xs font-bold group-hover:text-red-600 transition-colors">السلة</span>
               {cartItemsCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center group-hover:bg-red-700 transition-colors">
                   {cartItemsCount}
                 </span>
               )}
@@ -112,7 +120,7 @@ const Navbar = () => {
 
             {/* Autocomplete */}
             {suggestions.length > 0 && (
-              <div className="absolute top-full mt-1 w-full bg-white rounded-xl shadow z-50">
+              <div className="absolute top-full mt-1 w-full bg-white rounded-xl shadow z-1000">
                 {suggestions.map((item) => (
                   <div
                     key={item._id}

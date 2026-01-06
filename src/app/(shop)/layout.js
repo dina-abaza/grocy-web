@@ -21,6 +21,7 @@ export const metadata = {
 };
 
 export default function ShopLayout({ children }) {
+  
   return (
     <div className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50`}>
         <Providers>

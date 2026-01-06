@@ -2,8 +2,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/app/api"; 
-import { ShoppingCart, ArrowRight, Plus, Minus } from "lucide-react";
+import { ShoppingCart, ArrowRight, Plus, Minus} from "lucide-react";
 import { toast } from "react-toastify";
+import Activity from "@/app/loading";
 
 // ✅ Stores
 import { useAuthStore } from "@/app/(shop)/store/useAuthStore";
@@ -20,28 +21,30 @@ const CategoryProducts = () => {
   const [categoryName, setCategoryName] = useState("");
   const [loading, setLoading] = useState(true);
   const [quantities, setQuantities] = useState({});
+  const [page, setPage] = useState(1);
+  const [limit] = useState(12);
+  const [totalPages, setTotalPages] = useState(null);
 
   useEffect(() => {
     const fetchCategoryData = async () => {
       try {
         setLoading(true);
-        // ✅ جلب البيانات الحقيقية من السيرفر
-        const response = await api.get(`/products/category/${id}`);
-        
-        console.log("🟢 بيانات المنتجات الحقيقية:", response.data);
-        
+        const response = await api.get(`/products/category/${id}`, { params: { page, limit } });
         const realProducts = response.data.products || [];
 
         setProducts(realProducts);
         setCategoryName(response.data.name || "المنتجات");
+        const tp =
+          response.data?.totalPages ??
+          response.data?.pages ??
+          (response.data?.total ? Math.ceil(response.data.total / limit) : null);
+        setTotalPages(tp);
 
-        // ضبط الكميات الأولية (1 لكل منتج) بناءً على المنتجات الحقيقية
         const initialQuantities = {};
         realProducts.forEach((p) => (initialQuantities[p._id] = 1));
         setQuantities(initialQuantities);
 
       } catch (error) {
-        console.error("🔴 خطأ في جلب البيانات:", error);
         setProducts([]);
         setCategoryName("المنتجات");
       } finally {
@@ -50,7 +53,7 @@ const CategoryProducts = () => {
     };
 
     if (id) fetchCategoryData();
-  }, [id]);
+  }, [id, page]);
 
   const increment = (productId) => {
     setQuantities((prev) => ({
@@ -85,15 +88,12 @@ const CategoryProducts = () => {
 
   if (loading)
     return (
-      <div className="text-center py-20 font-bold text-gray-400">
-        جاري التحميل...
-      </div>
+     <Activity/>
     );
 
   return (
     <div className="bg-[#f8f8f8] min-h-screen pb-24" dir="rtl">
-      {/* Header */}
-      <div className="bg-white/90 backdrop-blur-md sticky top-0 z-50 p-4 shadow-sm border-b border-gray-100">
+      <div className="bg-white/90 backdrop-blur-md sticky top-0 p-4 shadow-sm border-b border-gray-100">
         <div className="max-w-7xl mx-auto flex items-center justify-center relative">
           <button
             onClick={() => router.back()}
@@ -107,7 +107,33 @@ const CategoryProducts = () => {
         </div>
       </div>
 
-      {/* المنتجات */}
+      <div className="max-w-7xl mx-auto px-4 mt-4">
+        <div className="flex items-center justify-between bg-white rounded-2xl border border-gray-100 p-3">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1}
+              className={`px-4 py-2 rounded-xl font-bold ${page <= 1 ? "bg-gray-200 text-gray-500 cursor-not-allowed" : "bg-gray-100 text-gray-800 hover:bg-gray-200"}`}
+            >
+              السابق
+            </button>
+            <span className="font-bold text-sm text-gray-700">
+              الصفحة {page}{totalPages ? ` من ${totalPages}` : ""}
+            </span>
+            <button
+              onClick={() => setPage((p) => p + 1)}
+              disabled={totalPages ? page >= totalPages : products.length < limit}
+              className={`px-4 py-2 rounded-xl font-bold ${totalPages ? (page >= totalPages ? "bg-gray-200 text-gray-500 cursor-not-allowed" : "bg-red-600 text-white hover:bg-red-700") : (products.length < limit ? "bg-gray-200 text-gray-500 cursor-not-allowed" : "bg-red-600 text-white hover:bg-red-700")}`}
+            >
+              التالي
+            </button>
+          </div>
+          <div className="text-xs text-gray-500">
+            عدد العناصر في الصفحة: {limit}
+          </div>
+        </div>
+      </div>
+
       <div className="p-4 flex flex-wrap justify-center gap-4 max-w-7xl mx-auto">
         {products.length > 0 ? (
           products.map((product) => (

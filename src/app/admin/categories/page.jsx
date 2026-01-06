@@ -4,6 +4,7 @@ import axios from "axios";
 import { Plus, Trash2, Edit2, FolderOpen, Check, X } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Activity from "@/app/loading";
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState([]);
@@ -103,11 +104,7 @@ export default function CategoriesPage() {
     }
   };
 
-  if (loading) return (
-    <div className="flex justify-center items-center min-h-[400px]">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-600"></div>
-    </div>
-  );
+  if (loading) return <Activity/>;
 
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-10 animate-in fade-in duration-500">

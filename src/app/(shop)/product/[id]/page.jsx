@@ -6,7 +6,7 @@ import { ShoppingCart, ArrowRight, Plus, Minus } from "lucide-react";
 import { toast } from "react-toastify";
 import { useAuthStore } from "@/app/(shop)/store/useAuthStore";
 import { useCartStore } from "@/app/(shop)/store/useCartStore";
-
+import Activity from "@/app/loading";
 const ProductDetails = () => {
   const { id } = useParams();
   const router = useRouter();
@@ -54,7 +54,7 @@ const handleAddToCart = async () => {
 };
 
   if (loading)
-    return <div className="text-center py-20 font-bold text-gray-400">جاري التحميل...</div>;
+    return <Activity />;
   if (!product) return null;
 
   return (
@@ -89,15 +89,7 @@ const handleAddToCart = async () => {
           <h2 className="text-xl font-bold text-gray-900 mb-4">{product.name}</h2>
 
           {/* اختيار الكمية */}
-          <div className="flex items-center gap-4 bg-gray-50 w-fit px-4 py-2 rounded-2xl mb-6">
-            <button onClick={() => setQuantity(q => q + 1)} className="text-green-600">
-              <Plus size={18} strokeWidth={3} />
-            </button>
-            <span className="text-lg font-black w-4 text-center">{quantity}</span>
-            <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="text-red-600">
-              <Minus size={18} strokeWidth={3} />
-            </button>
-          </div>
+         
 
           {/* الوصف */}
           <div className="border-t border-gray-100 pt-4">

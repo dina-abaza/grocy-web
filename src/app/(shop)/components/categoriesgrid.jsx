@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Link from 'next/link'; 
-
+import Activity from '@/app/loading';
 const CategoryGrid = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,9 +32,8 @@ const CategoryGrid = () => {
     fetchCategories();
   }, []);
 
-  if (loading) return <div className="text-center py-20 font-bold text-gray-400">جاري تحميل الأصناف...</div>;
-
-  return (
+  if (loading) return <Activity />;
+    return (
     <div className="max-w-7xl mx-auto px-4 py-6 mb-20" dir="rtl">
       <div className="grid grid-cols-3 gap-3 md:gap-4">
         {categories.map((category) => (

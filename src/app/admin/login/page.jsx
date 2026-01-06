@@ -27,20 +27,20 @@ export default function AdminLogin() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 w-full">
-      <form onSubmit={handleAdminLogin} className="bg-white p-8 rounded shadow-lg w-96">
-        <h1 className="text-xl font-bold mb-4 text-center text-red-600">لوحة تحكم المدير</h1>
+      <form onSubmit={handleAdminLogin} className="bg-white p-10 rounded shadow-lg w-96">
+        <h1 className="text-xl font-bold mb-4 text-center text-red-600">لوحة تحكم الادارة</h1>
         <div className="space-y-4">
           <input 
             type="email" placeholder="بريد المسؤول" 
-            className="w-full p-3 border rounded focus:ring-2 focus:ring-red-500"
+            className="w-full p-3 border rounded-2xl "
             onChange={(e) => setEmail(e.target.value)} 
           />
           <input 
             type="password" placeholder="كلمة السر" 
-            className="w-full p-3 border rounded focus:ring-2 focus:ring-red-500"
+            className="w-full p-3 border rounded-2xl "
             onChange={(e) => setPassword(e.target.value)} 
           />
-          <button className="w-full bg-gray-800 text-white p-3 rounded font-bold transition-colors hover:bg-black">
+          <button className="w-full bg-gray-800 text-white p-3 rounded font-bold transition-colors hover:bg-gray-900">
             تسجيل دخول الإدارة
           </button>
         </div>

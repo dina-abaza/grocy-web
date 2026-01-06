@@ -5,6 +5,7 @@ import { useAdminAuthStore } from "./store/useAdminAuthStore";
 import { usePathname, useRouter } from "next/navigation";
 import AdminSidebar from "./components/sidebar";
 import AdminTopbar from "./components/navbar";
+import api from "@/app/api";
 
 export default function AdminLayout({ children }) {
   const { admin, loading, verifyAdmin } = useAdminAuthStore();
@@ -23,6 +24,25 @@ export default function AdminLayout({ children }) {
       router.push('/admin/login');
     }
   }, [loading, admin, pathname, router]);
+
+  useEffect(() => {
+    if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
+      let active = true;
+      const refresh = async () => {
+        try {
+          await api.post('/auth/adminrefresh', { client: 'web' }, { withCredentials: true });
+        } catch {
+          if (active) router.push('/admin/login');
+        }
+      };
+      refresh();
+      const intervalId = setInterval(refresh, 5 * 60 * 1000);
+      return () => {
+        active = false;
+        clearInterval(intervalId);
+      };
+    }
+  }, [pathname, router]);
 
   if (loading && pathname !== '/admin/login') return (
     <div className="flex items-center justify-center min-h-screen bg-white">

@@ -52,13 +52,13 @@ export default function AdminDashboard() {
       {/* Header */}
       <div className="flex items-center gap-3 border-b border-gray-300 dark:border-gray-700 pb-4">
         <LayoutDashboard className="w-10 h-10 text-red-500" />
-        <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+        <h1 className="text-2xl md:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
           لوحة تحكم المتجر
         </h1>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1  lg:grid-cols-3 gap-6">
         <StatCard
           title="عدد المنتجات"
           value={stats.products}
@@ -85,17 +85,35 @@ export default function AdminDashboard() {
 function StatCard({ title, value, icon, color }) {
   return (
     <div
-      className={`${color} p-6 rounded-3xl shadow-lg flex flex-col justify-between hover:scale-105 transition-transform duration-300 cursor-pointer`}
+      className={`${color} 
+        /* تقليل الـ padding في المساحات الضيقة */
+        p-4 min-[1000px]:p-6 
+        rounded-3xl shadow-lg flex flex-col justify-between 
+        hover:scale-105 transition-transform duration-300 cursor-pointer h-full`}
     >
-      <div className="flex items-center justify-between mb-4">
-        {/* Title with bottom line */}
-        <div className="flex items-center gap-2">
-          <div className="w-1 h-8 bg-white rounded-full"></div>
-          <p className="text-white font-semibold text-lg border-b border-white/50 pb-1">{title}</p>
+      <div className="flex flex-row items-center justify-between mb-4 gap-2">
+        {/* العنوان */}
+        <div className="flex items-center gap-1.5 min-[1000px]:gap-2">
+          {/* تصغير الخط والخط الجانبي في المساحة الضيقة */}
+          <div className="w-0.5 min-[1000px]:w-1 h-6 min-[1000px]:h-8 bg-white rounded-full"></div>
+          <p className="text-white font-semibold text-md min-[1000px]:text-2xl border-b border-white/50 pb-1 truncate">
+            {title}
+          </p>
         </div>
-        <div className="rounded-full p-2 bg-white/30">{icon}</div>
+
+        {/* الأيقونة - تصغير حجم الدائرة حولها */}
+        <div className="rounded-full p-1.5 min-[1000px]:p-2 bg-white/30 shrink-0">
+          {/* تصغير الأيقونة نفسها */}
+          <div className="w-5 h-5 min-[1000px]:w-8 min-[1000px]:h-8 flex items-center justify-center">
+            {React.cloneElement(icon, { className: "w-full h-full text-white" })}
+          </div>
+        </div>
       </div>
-      <h2 className="text-4xl md:text-5xl text-white font-normal">{value}</h2>
+
+      {/* تصغير حجم الرقم في المساحة الضيقة */}
+      <h2 className="text-3xl min-[1000px]:text-5xl text-white font-normal">
+        {value}
+      </h2>
     </div>
   );
 }

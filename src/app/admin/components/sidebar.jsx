@@ -56,6 +56,7 @@ export default function AdminSidebar({ disabled, isOpen, setIsOpen }) {
             <Link
               key={link.href}
               href={link.href}
+              onClick={() => setIsOpen(false)}
               className={`flex items-center gap-3 p-2.5 rounded-xl text-gray-800 dark:text-gray-200 no-underline transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700 ${
                 isActive ? "bg-gray-100 dark:bg-gray-700 text-red-600 font-bold" : ""
               }`}
@@ -71,7 +72,10 @@ export default function AdminSidebar({ disabled, isOpen, setIsOpen }) {
       {!disabled && (
         <button 
           className="mt-auto bg-red-500 text-white border-none p-3 rounded-xl cursor-pointer flex items-center justify-center gap-2 hover:bg-red-600 transition-colors" 
-          onClick={adminLogout}
+          onClick={() => {
+            setIsOpen(false);
+            adminLogout();
+          }}
         >
           <LogOut size={18} />
           تسجيل خروج

@@ -77,7 +77,7 @@ export default function AdminSiteSettings() {
       {/* العنوان مع الأيقونة الموف الكبيرة */}
      <div className="flex items-center gap-3 pb-4 border-b border-gray-500 dark:border-gray-700 mb-8">
   <Share2 className="text-purple-600 w-8 h-8" />
-  <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">
+  <h1 className="text-xl md:text-2xl font-extrabold text-gray-900 dark:text-white">
     إعدادات السوشيال ميديا
   </h1>
 </div>
