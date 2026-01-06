@@ -1,8 +1,10 @@
 // app/api.js
 import axios from 'axios';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://iraqi-e-store-api.vercel.app/api';
+
 const api = axios.create({
-  baseURL: 'https://iraqi-e-store-api.vercel.app/api',
+  baseURL: API_BASE_URL,
   withCredentials: true,
 });
 
@@ -19,7 +21,7 @@ api.interceptors.response.use(
         const isAdminPath = window.location.pathname.startsWith('/admin');
         const refreshPath = isAdminPath ? '/auth/adminrefresh' : '/auth/refresh';
 
-        await axios.post(`https://iraqi-e-store-api.vercel.app/api${refreshPath}`, {}, { withCredentials: true });
+        await axios.post(`${API_BASE_URL}${refreshPath}`, {}, { withCredentials: true });
         
         return api(originalRequest); // إعادة الطلب الأصلي
       } catch (refreshError) {

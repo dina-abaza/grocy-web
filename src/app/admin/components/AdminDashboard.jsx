@@ -55,7 +55,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-3xl font-black text-gray-800">
+      <h1 className="text-3xl font-black text-gray-800 dark:text-white">
         Admin Dashboard
       </h1>
 
@@ -70,9 +70,9 @@ export default function AdminDashboard() {
 
 function StatCard({ title, value }) {
   return (
-    <div className="bg-white p-6 rounded-xl shadow hover:scale-105 transition">
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow hover:scale-105 transition">
       <p className="text-gray-400 font-bold">{title}</p>
-      <h2 className="text-4xl font-black text-gray-800">{value}</h2>
+      <h2 className="text-4xl font-black text-gray-800 dark:text-white">{value}</h2>
     </div>
   );
 }
