@@ -4,6 +4,7 @@ import api from "@/app/api";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "react-toastify";
+import GoogleSignInButton from "../components/GoogleSignInButton";
 
 export default function RegisterPage() {
   const [form, setForm] = useState({ username: "", email: "", password: "" });
@@ -59,6 +60,8 @@ export default function RegisterPage() {
             {loading ? "جاري الإنشاء..." : "إنشاء حساب"}
           </button>
         </form>
+
+        <GoogleSignInButton />
 
         <p className="text-sm text-center mt-6 text-gray-500">
           عندك حساب؟{" "}

@@ -3,6 +3,7 @@
 import { useEffect } from "react"; 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import { useAuthStore } from "@/app/(shop)/store/useAuthStore";
 import { usePathname } from "next/navigation"; 
 import Activity from "@/app/loading";
@@ -11,6 +12,7 @@ export default function Providers({ children }) {
   const checkAuth = useAuthStore((state) => state.checkAuth);
   const loading = useAuthStore((state) => state.loading);
   const pathname = usePathname();
+  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
   useEffect(() => {
     if (!pathname.startsWith('/admin')) {
@@ -19,11 +21,9 @@ export default function Providers({ children }) {
   }, [checkAuth, pathname]);
 
   return (
-    <>
-      {/* هنا الناف يفضل دايمًا موجود */}
+    <GoogleOAuthProvider clientId={clientId || ""}>
       {children}
 
-      {/* Loader يظهر فقط في منطقة المحتوى */}
       {loading && !pathname.startsWith('/admin') && (
         <div className="fixed top-[80px] bottom-0 left-0 right-0 flex items-center justify-center bg-white/70 z-50">
           <Activity />
@@ -39,6 +39,6 @@ export default function Providers({ children }) {
         pauseOnHover={false}
         theme="light"
       />
-    </>
+    </GoogleOAuthProvider>
   );
 }

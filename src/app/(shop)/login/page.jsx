@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/app/(shop)/store/useAuthStore"; // الستور اللي عملناه عشان نحفظ اليوزر
 import Link from "next/link";
 import { toast } from "react-toastify";
+import GoogleSignInButton from "../components/GoogleSignInButton";
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -59,6 +60,8 @@ export default function LoginPage() {
             {loading ? "جاري الدخول..." : "دخول"}
           </button>
         </form>
+
+        <GoogleSignInButton />
 
         <p className="text-sm text-center mt-6 text-gray-500">
           معندكش حساب؟{" "}

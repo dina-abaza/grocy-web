@@ -19,10 +19,7 @@ const Navbar = () => {
 
   // 🔹 Autocomplete
   useEffect(() => {
-    if (!keyword.trim()) {
-      setSuggestions([]);
-      return;
-    }
+    if (!keyword.trim()) return;
 
     const timer = setTimeout(async () => {
       try {
@@ -107,7 +104,11 @@ const Navbar = () => {
             <input
               type="text"
               value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
+              onChange={(e) => {
+                const v = e.target.value;
+                setKeyword(v);
+                if (!v.trim()) setSuggestions([]);
+              }}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               placeholder="بحث ...."
               className="w-full bg-[#e8e8e8] rounded-2xl py-2 pr-10 pl-4 text-sm outline-none"
