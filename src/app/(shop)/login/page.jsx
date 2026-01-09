@@ -18,8 +18,13 @@ export default function LoginPage() {
     setLoading(true);
     try {
       // إرسال طلب تسجيل الدخول
-      await api.post("/auth/login", { ...form, client: "web" });
+      const response = await api.post("/auth/login", { ...form, client: "web" });
       
+      // استلام وتخزين التوكن في localStorage
+      if (response.data && response.data.accessToken) {
+        localStorage.setItem('accessToken', response.data.accessToken);
+      }
+
       // تحديث بيانات المستخدم في الستور العالمي (Zustand)
       await checkAuth();
       
