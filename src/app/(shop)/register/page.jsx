@@ -5,9 +5,10 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "react-toastify";
 import GoogleSignInButton from "../components/GoogleSignInButton";
+import PhoneRegister from "../components/PhoneRegister";
 
 export default function RegisterPage() {
-  const [form, setForm] = useState({ username: "", email: "", password: "" });
+  const [form, setForm] = useState({ username: "", email: "", password: "", phone:""});
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -34,9 +35,17 @@ export default function RegisterPage() {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <input
+          type="name"
             placeholder="اسم المستخدم"
             className="w-full rounded-2xl px-5 py-4 text-gray-700 bg-gray-100 placeholder-gray-400 shadow-inner outline-none focus:ring-2 focus:ring-red-500"
             onChange={(e) => setForm({ ...form, username: e.target.value })}
+            required
+          />
+          <input
+            type="tel"
+            placeholder="رقم الهاتف"
+            className="w-full rounded-2xl px-5 py-4 text-gray-700 bg-gray-100 placeholder-gray-400 shadow-inner outline-none focus:ring-2 focus:ring-red-500"
+            onChange={(e) => setForm({ ...form, phone: e.target.value })}
             required
           />
           <input
@@ -62,6 +71,16 @@ export default function RegisterPage() {
         </form>
 
         <GoogleSignInButton />
+
+           {/* خط فاصل */}
+        <div className="w-full flex items-center gap-3 text-xs text-gray-400 my-6">
+          <span className="h-px flex-1 bg-gray-200"></span>
+          <span>أو التسجيل برقم الهاتف</span>
+          <span className="h-px flex-1 bg-gray-200"></span>
+        </div>
+
+        {/* تسجيل برقم الهاتف */}
+        <PhoneRegister />
 
         <p className="text-sm text-center mt-6 text-gray-500">
           عندك حساب؟{" "}
