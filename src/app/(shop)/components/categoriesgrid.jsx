@@ -12,6 +12,7 @@ const CategoryGrid = () => {
       try {
         const response = await axios.get('https://iraqi-e-store-api.vercel.app/api/categories');
         setCategories(response.data.categories || response.data);
+        console.log("categories",response.data)
         setLoading(false);
       } catch (err) {
         console.error('Error fetching categories:', err);
@@ -28,7 +29,10 @@ const CategoryGrid = () => {
         {categories.map((category) => (
         
           <Link 
-            href={`/category/${category._id}`} 
+           href={{
+            pathname: `/category/${category._id}`,
+             query: { name: category.name },
+             }}
             key={category._id} 
             className="relative overflow-hidden rounded-xl shadow-md bg-white aspect-square group transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
           >

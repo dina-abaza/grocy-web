@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { PackageSearch, Edit, Trash2, PlusCircle, ImageIcon, Weight, ChevronRight, ChevronLeft, Layers } from "lucide-react";
+import { PackageSearch, Edit, Trash2, PlusCircle, ImageIcon, Weight, ChevronRight, ChevronLeft, Layers, AlignRight } from "lucide-react";
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState([]);
@@ -22,6 +22,7 @@ export default function AdminProductsPage() {
     discountActive: false,
     category: "",
     weight: "",
+    description: "",
   });
 
   const BASE_URL = "https://iraqi-e-store-api.vercel.app";
@@ -68,6 +69,7 @@ export default function AdminProductsPage() {
     formData.append("discountActive", form.discountActive.toString());
     formData.append("category", form.category);
     formData.append("weight", form.weight || "");
+    formData.append("description", form.description || "");
     if (imageFile) formData.append("image", imageFile);
 
     try {
@@ -89,7 +91,7 @@ export default function AdminProductsPage() {
   };
 
   const resetForm = () => {
-    setForm({ name: "", price: "", discountPrice: "", discountActive: false, category: "", weight: "" });
+    setForm({ name: "", price: "", discountPrice: "", discountActive: false, category: "", weight: "", description: "" });
     setImageFile(null);
     setEditProductId(null);
     const fileInput = document.querySelector('input[type="file"]');
@@ -116,6 +118,7 @@ export default function AdminProductsPage() {
       discountActive: product.discountActive || false,
       category: product.category?._id || product.category || "",
       weight: product.weight || "",
+      description: product.description || "",
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -179,6 +182,11 @@ export default function AdminProductsPage() {
           <div className="flex items-center gap-4 px-5 bg-blue-50/50 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-900/30">
             <input type="checkbox" id="discountActive" checked={form.discountActive} onChange={(e) => setForm({ ...form, discountActive: e.target.checked })} className="w-6 h-6 rounded-lg accent-blue-600 cursor-pointer" />
             <label htmlFor="discountActive" className="font-black text-blue-700 dark:text-blue-400 cursor-pointer text-sm">تفعيل عرض الخصم</label>
+          </div>
+
+          <div className="col-span-full space-y-1.5">
+            <label className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2"><AlignRight size={16}/> وصف المنتج</label>
+            <textarea className="w-full p-3 md:p-4 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-2xl font-medium text-sm outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="اكتب تفاصيل المنتج هنا..." />
           </div>
 
           <div className="col-span-full space-y-1.5">
