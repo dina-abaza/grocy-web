@@ -22,7 +22,8 @@ export default function LoginPage() {
       
       // استلام وتخزين التوكن في localStorage
       if (response.data && response.data.accessToken) {
-        localStorage.setItem('accessToken', response.data.accessToken);
+        localStorage.setItem('accessToken', response.data.tokens.accessToken);
+         localStorage.setItem('refreshToken', response.data.tokens.refreshToken);
       }
 
       // تحديث بيانات المستخدم في الستور العالمي (Zustand)
