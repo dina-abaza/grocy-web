@@ -6,14 +6,16 @@ export const useAuthStore = create((set) => ({
   isAuthenticated: false,
   loading: true,
 
+  setUser: (user) => set({ user, isAuthenticated: !!user, loading: false }),
+
+  clearUser: () => set({ user: null, isAuthenticated: false, loading: false }),
+
   checkAuth: async () => {
     set({ loading: true });
     try {
-      // 👈 المسار الصح
       const res = await api.get("/auth/me");
-
       set({
-        user: res.data, // 👈 هنا المستخدم الحقيقي
+        user: res.data,
         isAuthenticated: true,
         loading: false,
       });
@@ -27,8 +29,17 @@ export const useAuthStore = create((set) => ({
   },
 
   logout: async () => {
-    await api.post("/auth/logout");
-    set({ user: null, isAuthenticated: false });
-    window.location.href = "/login";
+    try {
+      await api.post("/auth/logout");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      set({ user: null, isAuthenticated: false, loading: false });
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
+    }
   },
 }));

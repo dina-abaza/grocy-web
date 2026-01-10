@@ -7,10 +7,9 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// ✅ 1. Request Interceptor: إضافة التوكن تلقائياً لكل الطلبات (للمتجر)
+// Request Interceptor: Add token to every request
 api.interceptors.request.use(
   (config) => {
-    // نتحقق من وجود التوكن في التخزين المحلي (للمتجر)
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('accessToken');
       if (token) {
@@ -22,56 +21,43 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// ✅ 2. Response Interceptor: تجديد التوكن تلقائياً عند انتهاء الصلاحية
+// Response Interceptor: Refresh token automatically on expiration
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    const authRoutes = ['/auth/login', '/auth/register', '/auth/admin/login'];
 
-    // إذا كان الخطأ 401 (غير مصرح) ولم يتم إعادة المحاولة بعد
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !authRoutes.includes(originalRequest.url)
+    ) {
       originalRequest._retry = true;
       
       try {
         const isAdminPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
-        
-        // مسارات التجديد: نستخدم /auth/adminrefresh للأدمن و /auth/refresh-token للمتجر
         const refreshPath = isAdminPath ? '/auth/adminrefresh' : '/auth/refresh';
 
-        // محاولة تجديد التوكن
-        const res = await axios.post(`${API_BASE_URL}${refreshPath}`, 
-          { client: 'web' }, 
-          { withCredentials: true }
-        );
+        const { data } = await axios.post(`${API_BASE_URL}${refreshPath}`, {}, { withCredentials: true });
         
-        // إذا رجع توكن جديد (للمتجر)، نخزنه ونحدث الهيدر
-        if (res.data?.accessToken) {
+        if (data?.accessToken) {
           if (typeof window !== 'undefined') {
-            localStorage.setItem('accessToken', res.data.accessToken);
+            localStorage.setItem('accessToken', data.accessToken);
           }
-          // تحديث الهيدر للطلب المعاد
-          originalRequest.headers.Authorization = `Bearer ${res.data.accessToken}`;
-          // تحديث الهيدر للـ instance المستقبلي
-          api.defaults.headers.common['Authorization'] = `Bearer ${res.data.accessToken}`;
+          api.defaults.headers.common['Authorization'] = `Bearer ${data.accessToken}`;
+          originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
+          return api(originalRequest);
         }
-
-        // إعادة تنفيذ الطلب الأصلي
-        return api(originalRequest); 
-        
       } catch (refreshError) {
-        // إذا فشل التجديد تماماً
         if (typeof window !== 'undefined') {
           if (window.location.pathname.startsWith('/admin')) {
-             // توجيه الأدمن لصفحة الدخول لأن لوحة التحكم محمية بالكامل
              window.location.href = '/admin/login';
           } else {
-             // مسح بيانات المتجر
              localStorage.removeItem('accessToken');
              localStorage.removeItem('refreshToken');
-             
-             // 🛑 هام: لا نقوم بالتوجيه التلقائي لصفحة الدخول في المتجر
-             // لأن المستخدم قد يكون زائراً يتصفح فقط
-             // المكونات (Components) هي المسؤولة عن توجيه المستخدم إذا حاول القيام بعمل يحتاج تسجيل دخول
+             // We don't redirect automatically in the store
+             // Components are responsible for redirecting if an action requires login
           }
         }
         return Promise.reject(refreshError);

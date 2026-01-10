@@ -17,7 +17,7 @@ export default function GoogleSignInButton() {
       return;
     }
     try {
-      const res = await api.post("/auth/google", { token, client: "web" });
+      const res = await api.post("/auth/google", { token });
       if (res.data?.tokens) {
         localStorage.setItem("accessToken", res.data.tokens.accessToken || "");
         localStorage.setItem("refreshToken", res.data.tokens.refreshToken || "");

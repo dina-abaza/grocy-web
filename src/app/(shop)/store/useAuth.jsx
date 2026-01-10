@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import api from "@/app/(shop)/axios";
+import api from "@/app/api";
 import { useAuthStore } from "./useAuthStore";
 
 /* ================= LOGIN ================= */
@@ -8,26 +8,18 @@ export const useLogin = () => {
 
   return useMutation({
     mutationFn: async ({ email, password }) => {
-      const res = await api.post("/api/auth/login", { email, password, client: "web" });
-
-      console.log("Login Response:", res.data);
-
-      if (res.data.tokens) {
-        localStorage.setItem("accessToken", res.data.tokens.accessToken);
-        localStorage.setItem("refreshToken", res.data.tokens.refreshToken);
-      } else {
-        console.warn("لا يوجد توكنز في الاستجابة!");
-      }
-
+      const res = await api.post("/auth/login", { email, password });
       return res.data;
     },
-
     onSuccess: (data) => {
+      if (data.tokens) {
+        localStorage.setItem("accessToken", data.tokens.accessToken);
+        localStorage.setItem("refreshToken", data.tokens.refreshToken);
+      }
       if (data.user) {
-        setUser({ email: data.user.email, username: data.user.username });
+        setUser(data.user);
       }
     },
-
     onError: (err) => {
       console.error("Login Error:", err.response?.data || err.message);
     },
@@ -36,23 +28,11 @@ export const useLogin = () => {
 
 /* ================= REGISTER ================= */
 export const useRegister = () => {
-  const setUser = useAuthStore((state) => state.setUser);
-
   return useMutation({
-    mutationFn: async ({ username, email, password, client }) => {
-      const res = await api.post("/api/auth/register", { username, email, password, client });
-
-      console.log("Register Response:", res.data);
-
+    mutationFn: async ({ username, email, password }) => {
+      const res = await api.post("/auth/register", { username, email, password });
       return res.data;
     },
-
-    onSuccess: (data) => {
-      if (data.user) {
-        setUser({ email: data.user.email, username: data.user.username });
-      }
-    },
-
     onError: (err) => {
       console.error("Register Error:", err.response?.data || err.message);
     },

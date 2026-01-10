@@ -51,9 +51,7 @@ const handleConfirmOrder = async (e) => {
 
     const response = await api.post(
       '/orders',
-      orderData,
-      { withCredentials: true } // مهم لإرسال الكوكيز
-    );
+      orderData);
 
     toast.success("تم إنشاء الطلب بنجاح!");
     console.log("طلب جديد:", response.data);
